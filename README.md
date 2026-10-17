@@ -30,6 +30,8 @@ Não há senha padrão nem registros de demonstração. Cadastre um cliente e um
 
 ## Publicação
 
+O projeto está preparado para Railway com Dockerfile, criação automática de tabelas e verificação de saúde. Veja [docs/DEPLOY.md](docs/DEPLOY.md) para as referências corretas das variáveis MySQL e o primeiro acesso.
+
 Use HTTPS e `NODE_ENV=production` para habilitar cookies seguros. Se houver exatamente um proxy reverso confiável à frente do Express, configure `TRUST_PROXY=1`; caso contrário mantenha `0`. Não exponha o MySQL à internet. O processo falha ao iniciar se faltar segredo de sessão ou conexão ao banco.
 
 ## Verificação

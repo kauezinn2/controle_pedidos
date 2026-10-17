@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "admin": "node src/create-admin.js",
+    "db:setup": "node src/setup-db.js",
+    "start:production": "npm run db:setup && node src/server.js",
     "test": "node --test",
     "check": "node --check src/server.js && node --check public/js/main.js"
   },

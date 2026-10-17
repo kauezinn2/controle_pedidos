@@ -14,6 +14,11 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) throw
 if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'"], imgSrc: ["'self'", 'data:'], upgradeInsecureRequests: production ? [] : null } }, strictTransportSecurity: production ? undefined : false }));
+app.get('/healthz', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try { await pool.query('SELECT 1'); res.json({ status: 'ok' }); }
+  catch { res.status(503).json({ status: 'unavailable' }); }
+});
 app.use(express.json({ limit: '64kb' }));
 app.use('/public', express.static(path.join(__dirname, '../public')));
 const sessionStore = new MySQLStore({ expiration: 8 * 60 * 60 * 1000, clearExpired: true, endConnectionOnClose: false }, pool);
@@ -191,7 +196,7 @@ app.use((error, req, res, next) => {
 async function start() {
   await pool.query('SELECT 1');
   await sessionStore.onReady();
-  const server = app.listen(Number(process.env.PORT || 3000), () => console.log(`Controle de pedidos: http://localhost:${process.env.PORT || 3000}`));
+  const server = app.listen(Number(process.env.PORT || 3000), '0.0.0.0', () => console.log(`Controle de pedidos ouvindo na porta ${process.env.PORT || 3000}`));
   const stop = () => server.close(async () => { await sessionStore.close(); await pool.end(); process.exit(0); });
   process.on('SIGINT', stop); process.on('SIGTERM', stop);
 }

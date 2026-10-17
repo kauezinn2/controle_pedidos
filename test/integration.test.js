@@ -1,8 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
-const { spawn } = require('node:child_process');
-const fs = require('node:fs/promises');
+const { spawn, spawnSync } = require('node:child_process');
 const path = require('node:path');
 
 test('API com MySQL real: autenticação, cadastros, estoque concorrente e cancelamento', { skip: process.env.INTEGRATION_TESTS !== '1', timeout: 60000 }, async t => {
@@ -15,8 +14,16 @@ test('API com MySQL real: autenticação, cadastros, estoque concorrente e cance
     if (child && child.exitCode === null) { const stopped = new Promise(resolve => child.once('exit', resolve)); child.kill(); await stopped; }
     await db.query(`DROP DATABASE IF EXISTS \`${database}\``); await db.end();
   });
-  const schema = (await fs.readFile(path.join(__dirname, '../db.sql'), 'utf8')).replaceAll('controle_pedidos', database);
-  await db.query(schema);
+  await db.query(`CREATE DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+  await db.query(`USE \`${database}\``);
+  const setupEnv = { ...process.env, DB_HOST: config.host, DB_PORT: String(config.port), DB_USER: config.user, DB_PASSWORD: config.password, DB_NAME: database, NODE_ENV: 'test', INITIAL_USER_EMAIL: 'operator@teste.local', INITIAL_USER_PASSWORD: 'senha-inicial-teste-123' };
+  for (const password of ['senha-inicial-teste-123', 'outra-senha-segura-456']) {
+    const setup = spawnSync(process.execPath, ['src/setup-db.js'], { cwd: path.join(__dirname, '..'), env: { ...setupEnv, INITIAL_USER_PASSWORD: password }, encoding: 'utf8', timeout: 15000 });
+    assert.equal(setup.status, 0, setup.stderr || setup.stdout);
+  }
+  const [[initial]] = await db.execute('SELECT senha_hash,perfil FROM usuarios WHERE email=?', ['operator@teste.local']);
+  assert.equal(initial.perfil, 'operador');
+  assert.ok(await bcrypt.compare('senha-inicial-teste-123', initial.senha_hash), 'O segundo deploy não deve reescrever a senha existente.');
   await db.execute('INSERT INTO usuarios (nome,email,senha_hash,perfil) VALUES (?,?,?,?)', ['Admin Teste', 'admin@teste.local', await bcrypt.hash('senha-segura-123', 12), 'admin']);
   const port = Number(process.env.TEST_APP_PORT || 3197), base = `http://127.0.0.1:${port}/api`;
   child = spawn(process.execPath, ['src/server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DB_HOST: config.host, DB_PORT: String(config.port), DB_USER: config.user, DB_PASSWORD: config.password, DB_NAME: database, PORT: String(port), NODE_ENV: 'test', TRUST_PROXY: '0', SESSION_SECRET: randomBytes(40).toString('hex') }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -27,6 +34,10 @@ test('API com MySQL real: autenticação, cadastros, estoque concorrente e cance
     try { await fetch(`${base}/session`); ready = true; break; } catch { await new Promise(resolve => setTimeout(resolve, 100)); }
   }
   assert.ok(ready, logs || 'Servidor não iniciou.');
+  const health = await fetch(`http://127.0.0.1:${port}/healthz`);
+  assert.equal(health.status, 200);
+  assert.equal(health.headers.get('set-cookie'), null);
+  assert.deepEqual(await health.json(), { status: 'ok' });
   let cookie = '', csrf = '';
   async function request(url, method = 'GET', body, token = csrf) {
     const response = await fetch(base + url, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie, 'X-CSRF-Token': token }, body: body === undefined ? undefined : JSON.stringify(body) });
