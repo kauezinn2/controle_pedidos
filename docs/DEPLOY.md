@@ -1,6 +1,8 @@
 # Publicar no Railway
 
-O projeto inclui Dockerfile e railway.json. A aplicação atende em 0.0.0.0 na porta fornecida pela hospedagem. O deploy executa `npm run start:production`, que verifica as tabelas no banco configurado antes de iniciar o servidor. A verificação de saúde usa `/healthz` e só retorna 200 quando o MySQL está acessível.
+O projeto inclui Dockerfile, detectado automaticamente pelo Railway. A aplicação atende em 0.0.0.0 na porta configurada. O Docker executa `npm run start:production`, que verifica as tabelas no banco configurado antes de iniciar o servidor. Nas configurações do serviço, defina Healthcheck Path como `/healthz`; essa rota só retorna 200 quando o MySQL está acessível.
+
+Em outubro de 2026, o painel do Railway informa que novos serviços não podem ativar o antigo Config as Code (railway.json). Por isso, este projeto usa Dockerfile e configurações do painel, sem depender desse recurso descontinuado.
 
 ## Repositório
 
@@ -10,12 +12,13 @@ Não envie `.env`. O `.gitignore` protege esse arquivo e outras variantes; a ima
 
 ## Serviços
 
-No painel Railway, adicione o repositório como serviço da aplicação e adicione um serviço MySQL ao mesmo projeto. Se houver cobrança, escolha e aprove o plano antes de provisionar recursos. A porta é fornecida automaticamente pelo Railway; não é preciso cadastrar PORT.
+No painel Railway, adicione o repositório como serviço da aplicação e adicione um serviço MySQL ao mesmo projeto. Se houver cobrança, escolha e aprove o plano antes de provisionar recursos. Este deploy usa PORT=3000 e domínio público apontando para a mesma porta.
 
 No serviço da aplicação, use estas variáveis. As referências abaixo pressupõem que o serviço do banco se chama `MySQL`; ajuste o prefixo se houver outro nome.
 
 ```dotenv
 NODE_ENV=production
+PORT=3000
 TRUST_PROXY=1
 TZ=America/Sao_Paulo
 LOW_STOCK_LIMIT=5
@@ -53,4 +56,4 @@ Para um administrador, execute `npm run admin` em um terminal conectado ao banco
 
 Depois de um deploy saudável, gere o domínio na seção de rede pública da aplicação. Verifique `/healthz`, entre em `/login`, cadastre um cliente/produto fictício e crie um pedido. Confira a baixa do estoque e o cancelamento. Somente depois use o endereço final no portfólio.
 
-Use dados fictícios na demonstração. Os dados locais não são copiados por esse processo. Configuração oficial: https://docs.railway.com/config-as-code/reference e https://docs.railway.com/databases/mysql
+Use dados fictícios na demonstração. Os dados locais não são copiados por esse processo. Configuração oficial: https://docs.railway.com/deploy/healthchecks e https://docs.railway.com/databases/mysql
