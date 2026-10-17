@@ -1,5 +1,12 @@
 # Publicar no Railway
 
+Deploy deste projeto:
+
+- Aplicação: https://controlepedidos-production.up.railway.app
+- Saúde: https://controlepedidos-production.up.railway.app/healthz
+- Serviços: controle_pedidos e MySQL, ambiente production.
+- Atualizações automáticas conectadas à branch main do repositório autorizado.
+
 O projeto inclui Dockerfile, detectado automaticamente pelo Railway. A aplicação atende em 0.0.0.0 na porta configurada. O Docker executa `npm run start:production`, que verifica as tabelas no banco configurado antes de iniciar o servidor. Nas configurações do serviço, defina Healthcheck Path como `/healthz`; essa rota só retorna 200 quando o MySQL está acessível.
 
 Em outubro de 2026, o painel do Railway informa que novos serviços não podem ativar o antigo Config as Code (railway.json). Por isso, este projeto usa Dockerfile e configurações do painel, sem depender desse recurso descontinuado.

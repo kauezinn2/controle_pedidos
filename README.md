@@ -2,6 +2,8 @@
 
 Aplicação em Node.js, Express, MySQL 8, HTML, CSS e JavaScript puro. Interface em português, responsiva, com login, dashboard, clientes, produtos, carrinho, filtros de pedidos e impressão.
 
+Demonstração publicada: [controlepedidos-production.up.railway.app](https://controlepedidos-production.up.railway.app). O ambiente público usa um banco MySQL separado do desenvolvimento local. A disponibilidade depende do plano e dos créditos da conta Railway.
+
 ## Instalação
 
 Requisitos: Node.js 20 ou superior e MySQL 8. O MySQL deve usar o mesmo fuso horário local do processo Node para que os indicadores de hoje e do mês sejam consistentes. No Brasil, configure ambos para America/Sao_Paulo ou UTC−03:00.
