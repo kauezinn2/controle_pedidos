@@ -1,0 +1,26 @@
+{
+  "name": "controle-pedidos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Controle de pedidos com Express e MySQL",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "admin": "node src/create-admin.js",
+    "test": "node --test",
+    "check": "node --check src/server.js && node --check public/js/main.js"
+  },
+  "engines": { "node": ">=20" },
+  "overrides": { "mysql2": "$mysql2" },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-mysql-session": "^3.0.3",
+    "express-rate-limit": "^8.1.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "mysql2": "^3.15.0"
+  }
+}
